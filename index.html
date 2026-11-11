@@ -18,7 +18,10 @@
       <section class="panel" aria-labelledby="input-title">
         <div class="panel-heading">
           <h2 id="input-title">Support tickets</h2>
-          <button id="load" class="secondary" type="button">Load sample tickets</button>
+          <div class="sample-actions" role="group" aria-label="Load sample tickets">
+            <button id="load" class="secondary" type="button">Refund sample</button>
+            <button id="load-shipping" class="secondary" type="button">Shipping sample</button>
+          </div>
         </div>
         <label for="tickets">One ticket per line</label>
         <textarea id="tickets" rows="12" maxlength="20000" spellcheck="false" placeholder="Customer name | Order ID | Complaint"></textarea>

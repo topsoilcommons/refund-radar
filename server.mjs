@@ -1,10 +1,11 @@
 import { createServer as createHttpServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { samples } from './samples.mjs';
+import { samples, shippingSamples } from './samples.mjs';
 
 const endpoint = 'https://cloud-api.near.ai/v1/chat/completions';
 const defaultModel = 'z-ai/glm-5.3-flash';
+const publicBatches = new Set([samples, shippingSamples]);
 
 const issues = {
   refund_confirmation: ['Missing refund confirmations', 'Send a refund confirmation email', 'Tell customers when a refund has been issued and when to expect it.'],
@@ -75,20 +76,22 @@ function makeBrief(content, tickets) {
   }
 
   const remaining = new Set(tickets.map(({ ref }) => ref));
-  const totals = new Map();
+  const evidence = new Map();
   if (!Array.isArray(result?.assignments)) throw invalid();
   for (const assignment of result.assignments) {
     if (!assignment || !Object.hasOwn(issues, assignment.issue) || !remaining.delete(assignment.ref)) throw invalid();
-    totals.set(assignment.issue, (totals.get(assignment.issue) ?? 0) + 1);
+    const refs = evidence.get(assignment.issue) ?? [];
+    refs.push(assignment.ref);
+    evidence.set(assignment.issue, refs);
   }
   if (remaining.size) throw invalid();
 
-  const fixes = [...totals]
-    .sort(([left, a], [right, b]) => (left === 'other') - (right === 'other') || b - a || left.localeCompare(right))
+  const fixes = [...evidence]
+    .sort(([left, a], [right, b]) => (left === 'other') - (right === 'other') || b.length - a.length || left.localeCompare(right))
     .slice(0, 3)
-    .map(([issue, count]) => {
+    .map(([issue, refs]) => {
       const [label, action, why] = issues[issue];
-      return { label, action, why, count };
+      return { label, action, why, count: refs.length, refs: refs.sort() };
     });
   const first = fixes[0];
   const brief = 'Reviewed ' + tickets.length + (tickets.length === 1 ? ' complaint. ' : ' complaints. ') +
@@ -183,7 +186,7 @@ export function createServer({
         }
         const { tickets } = (await readBody(request)) ?? {};
         if (publicHost) {
-          if (tickets !== samples) throw new AppError(400, 'Use Load sample tickets for the public demo.');
+          if (!publicBatches.has(tickets)) throw new AppError(400, 'Choose one of the fictional sample batches for the public demo.');
           if (Date.now() >= renewAt) {
             remainingCalls = 60;
             renewAt = Date.now() + 60 * 60_000;
@@ -208,7 +211,7 @@ export function createServer({
       if (publicHost && name === 'index.html') {
         asset = asset.replace('One ticket per line', 'Fictional sample tickets only')
           .replace('<textarea id="tickets"', '<textarea readonly id="tickets"')
-          .replace('Customer name | Order ID | Complaint', 'Click Load sample tickets to begin');
+          .replace('Customer name | Order ID | Complaint', 'Choose a sample batch to begin');
       }
       send(response, 200, type, asset);
     } catch (error) {

@@ -23,12 +23,13 @@ textarea { display: block; margin: 8px 0 15px; width: 100%; min-height: 170px; h
 textarea::placeholder { color: #a0aec5; }
 button { font: inherit; font-size: .875rem; font-weight: 700; border-radius: 8px; padding: 10px 13px; cursor: pointer; }
 button:disabled { opacity: .52; cursor: default; }
-button:focus-visible, textarea:focus-visible { outline: 2px solid #8be7d6; outline-offset: 3px; }
+button:focus-visible, textarea:focus-visible, summary:focus-visible { outline: 2px solid #8be7d6; outline-offset: 3px; }
 .primary { background: #8be7d6; color: #102523; border: 1px solid #8be7d6; }
 .primary:hover:not(:disabled) { background: #abf1e5; }
 .secondary { background: #243248; color: #e7edf6; border: 1px solid #465772; }
 .secondary:hover:not(:disabled) { background: #2d405c; }
 .controls { display: flex; align-items: center; gap: 13px; }
+.sample-actions { display: flex; flex-wrap: wrap; gap: 6px; }
 .status { color: #aebbd1; font-size: .875rem; margin: 10px 0 0; }
 .status:empty { display: none; }
 .status.error { color: #ffb7ad; }
@@ -42,6 +43,8 @@ li:first-child { background: #173532; border-color: #4c9d90; }
 li:first-child::marker, li:first-child .evidence { color: #a6f3e4; }
 li p { margin: 5px 0 0; font-size: .875rem; color: #c4d1e2; line-height: 1.4; }
 .evidence { display: inline-block; margin-left: 8px; color: #b9c6d9; font-size: .8rem; white-space: nowrap; }
+.ticket-evidence { margin-top: 7px; font-size: .8rem; }
+.ticket-evidence summary { width: fit-content; cursor: pointer; color: #a6f3e4; }
 footer { margin-top: 15px; }
 @media (max-width: 760px) {
   main { width: calc(100% - 32px); padding-top: 28px; }

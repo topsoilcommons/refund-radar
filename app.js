@@ -1,6 +1,7 @@
-import { samples } from '/samples.mjs';
+import { samples, shippingSamples } from '/samples.mjs';
 
 const load = document.querySelector('#load');
+const loadShipping = document.querySelector('#load-shipping');
 const input = document.querySelector('#tickets');
 const generate = document.querySelector('#generate');
 const copy = document.querySelector('#copy');
@@ -19,6 +20,7 @@ function updateInput() {
   const ticketCount = input.value.split('\n').filter((line) => line.trim()).length;
   count.textContent = ticketCount + (ticketCount === 1 ? ' ticket' : ' tickets');
   generate.disabled = !ticketCount;
+  generationStatus.classList.remove('error');
   generationStatus.textContent = '';
   clearReport();
 }
@@ -42,12 +44,19 @@ function showReport(report) {
     const action = document.createElement('strong');
     const detail = document.createElement('p');
     const evidence = document.createElement('span');
+    const disclosure = document.createElement('details');
+    const summary = document.createElement('summary');
+    const refs = document.createElement('p');
     const ticketLabel = fix.count + (fix.count === 1 ? ' ticket' : ' tickets');
     action.textContent = fix.action;
     detail.textContent = fix.why;
     evidence.textContent = ticketLabel;
     evidence.className = 'evidence';
-    row.append(action, evidence, detail);
+    disclosure.className = 'ticket-evidence';
+    summary.textContent = 'View evidence';
+    refs.textContent = 'Supporting tickets, in input order: ' + fix.refs.join(', ');
+    disclosure.append(summary, refs);
+    row.append(action, evidence, detail, disclosure);
     fixes.append(row);
     lines.push((index + 1) + '. ' + fix.action + ' (' + ticketLabel + '). ' + fix.why);
   }
@@ -56,16 +65,19 @@ function showReport(report) {
   copy.disabled = false;
 }
 
-load.addEventListener('click', () => {
-  input.value = samples;
+function loadSample(tickets) {
+  input.value = tickets;
   input.scrollTop = 0;
   updateInput();
-});
+}
+
+load.addEventListener('click', () => loadSample(samples));
+loadShipping.addEventListener('click', () => loadSample(shippingSamples));
 input.addEventListener('input', updateInput);
 
 generate.addEventListener('click', async () => {
   clearReport();
-  load.disabled = input.disabled = generate.disabled = true;
+  load.disabled = loadShipping.disabled = input.disabled = generate.disabled = true;
   reportPanel.setAttribute('aria-busy', 'true');
   generationStatus.classList.remove('error');
   generationStatus.textContent = 'Analyzing complaints with NEAR AI…';
@@ -85,7 +97,7 @@ generate.addEventListener('click', async () => {
       ? 'Could not reach Refund Radar. Check that the local server is running.'
       : error.message;
   } finally {
-    load.disabled = input.disabled = generate.disabled = false;
+    load.disabled = loadShipping.disabled = input.disabled = generate.disabled = false;
     reportPanel.removeAttribute('aria-busy');
   }
 });
