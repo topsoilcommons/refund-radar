@@ -16,8 +16,8 @@ Open [Refund Radar](http://127.0.0.1:4310) in Chrome. The app binds to the loopb
 
 ## 60-second demo
 
-1. Click **NEAR Intents reports**, then **Generate brief**. The expected top fix is to show swap status and refund evidence in one place, supported by two of three reports.
-2. Open **View evidence** under a fix. Each supporting report links to its public source and shows the reported status, available refund evidence, and a suggested next check.
+1. Click **Run the live demo**. The expected top fix is to show swap status and refund evidence in one place, supported by two of three reports.
+2. Open **See the reports** under a fix. Each supporting report links to its public source and shows the reported status, available refund evidence, and a suggested next check.
 3. Click **Copy brief** to share the summary and ranked fixes without customer names, order IDs, or ticket references.
 
 The public reports are paraphrased and describe historical observations. Refund Radar does not query current swap or refund status or move funds. It sends only the summaries and internal references to the model. The **Refund sample** and **Shipping sample** are fictional comparison batches. Use the local app to try another batch.

@@ -1,6 +1,7 @@
 import { intentsReports, intentsSamples, samples, shippingSamples } from '/samples.mjs';
 
 const loadIntents = document.querySelector('#load-intents');
+const runDemo = document.querySelector('#run-demo');
 const load = document.querySelector('#load');
 const loadShipping = document.querySelector('#load-shipping');
 const input = document.querySelector('#tickets');
@@ -59,7 +60,7 @@ function showReport(report) {
     evidence.textContent = ticketLabel;
     evidence.className = 'evidence';
     disclosure.className = 'ticket-evidence';
-    summary.textContent = 'View evidence';
+    summary.textContent = isIntents ? 'See the reports' : 'View evidence';
     refs.textContent = 'Supporting tickets, in input order: ' + fix.refs.join(', ');
     disclosure.append(summary, refs);
     if (isIntents) {
@@ -99,12 +100,16 @@ load.addEventListener('click', () => loadSample(samples));
 loadShipping.addEventListener('click', () => loadSample(shippingSamples));
 input.addEventListener('input', updateInput);
 
-generate.addEventListener('click', async () => {
+async function generateBrief() {
+  if (generate.disabled) return;
   clearReport();
-  loadIntents.disabled = load.disabled = loadShipping.disabled = input.disabled = generate.disabled = true;
+  runDemo.disabled = loadIntents.disabled = load.disabled = loadShipping.disabled = input.disabled = generate.disabled = true;
   reportPanel.setAttribute('aria-busy', 'true');
   generationStatus.classList.remove('error');
-  generationStatus.textContent = 'Analyzing complaints with NEAR AI…';
+  generationStatus.textContent = 'Reading the reports with NEAR AI…';
+  brief.hidden = true;
+  reportPanel.focus({ preventScroll: true });
+  reportPanel.scrollIntoView({ block: 'start' });
   try {
     const response = await fetch('/api/brief', {
       method: 'POST',
@@ -118,12 +123,20 @@ generate.addEventListener('click', async () => {
   } catch (error) {
     generationStatus.classList.add('error');
     generationStatus.textContent = error instanceof TypeError
-      ? 'Could not reach Refund Radar. Check that the local server is running.'
+      ? 'Could not reach Refund Radar. Try again in a moment.'
       : error.message;
   } finally {
-    loadIntents.disabled = load.disabled = loadShipping.disabled = input.disabled = generate.disabled = false;
+    runDemo.disabled = loadIntents.disabled = load.disabled = loadShipping.disabled = input.disabled = generate.disabled = false;
+    brief.hidden = false;
     reportPanel.removeAttribute('aria-busy');
   }
+}
+
+generate.addEventListener('click', generateBrief);
+runDemo.addEventListener('click', () => {
+  if (runDemo.disabled) return;
+  loadSample(intentsSamples);
+  return generateBrief();
 });
 
 copy.addEventListener('click', async () => {

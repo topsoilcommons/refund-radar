@@ -3,21 +3,39 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Refund Radar</title>
+  <title>Refund Radar | Find what’s causing repeat support tickets</title>
+  <meta name="description" content="See where swap customers get stuck and what to fix first. Try Refund Radar with three real public NEAR Intents reports.">
+  <meta name="theme-color" content="#101723">
   <link rel="stylesheet" href="/styles.css">
   <script type="module" src="/app.js"></script>
 </head>
 <body>
   <main>
     <header class="intro">
-      <div class="brand"><span class="mark" aria-hidden="true"></span> Refund Radar</div>
-      <h1>Know what to fix first.</h1>
-      <p>Turn support complaints into a leadership brief and ranked fixes. Try it with real public NEAR Intents reports.</p>
+      <div class="hero-copy">
+        <div class="brand"><span class="mark" aria-hidden="true"></span> Refund Radar</div>
+        <h1>What happened<br class="hero-break"> to my swap?</h1>
+        <p>When customers keep asking the same question, wallet and swap support teams need to know why. Refund Radar reads the reports, shows what keeps going wrong, and recommends what to fix first.</p>
+        <div class="hero-actions">
+          <button id="run-demo" class="primary hero-cta" type="button">Run the live demo <span aria-hidden="true">→</span></button>
+          <span>Three real public reports. No sign-in.</span>
+        </div>
+      </div>
+      <aside class="hero-finding" aria-label="Example finding from the public reports">
+        <p class="finding-label">From the three public reports</p>
+        <div class="finding-count">2<span> / 3</span></div>
+        <div class="finding-bar" aria-hidden="true"><span></span><span></span><span></span></div>
+        <p class="finding-description">Two reports describe customers who couldn’t confirm what happened to their swap or refund.</p>
+        <div class="finding-action">
+          <span>What to fix first</span>
+          <strong>Show swap status and refund evidence in one place.</strong>
+        </div>
+      </aside>
     </header>
     <div class="workspace">
       <section class="panel" aria-labelledby="input-title">
         <div class="panel-heading">
-          <h2 id="input-title">Support tickets</h2>
+          <h2 id="input-title">Reports to analyze</h2>
           <div class="sample-actions" role="group" aria-label="Choose a report batch">
             <button id="load-intents" class="secondary" type="button">NEAR Intents reports</button>
             <button id="load" class="secondary" type="button">Refund sample</button>
@@ -28,17 +46,17 @@
         <p id="batch-context" class="status" hidden>Real public reports. Status is shown as reported and may have changed.</p>
         <textarea id="tickets" rows="12" maxlength="20000" spellcheck="false" placeholder="Customer name | Order ID | Complaint"></textarea>
         <div class="controls">
-          <button id="generate" class="primary" type="button" disabled>Generate brief</button>
+          <button id="generate" class="primary" type="button" disabled>Find the top issue</button>
           <span id="ticket-count">0 tickets</span>
         </div>
-        <p id="generation-status" class="status" role="status"></p>
       </section>
-      <section class="panel" aria-labelledby="report-title" id="report">
+      <section class="panel" aria-labelledby="report-title" id="report" tabindex="-1">
         <div class="panel-heading">
-          <h2 id="report-title">Leadership brief</h2>
+          <h2 id="report-title">What to fix first</h2>
           <button id="copy" class="secondary" type="button" disabled>Copy brief</button>
         </div>
-        <p id="brief" class="brief empty">Generate a brief to see the top issues and what to fix.</p>
+        <p id="generation-status" class="status" role="status"></p>
+        <p id="brief" class="brief empty">Run the live demo to see the top issue, the reports behind it, and a short brief you can share.</p>
         <div id="recommendations" hidden>
           <h3>Ranked fixes</h3>
           <ol id="fixes"></ol>
@@ -46,7 +64,10 @@
         <p id="copy-status" class="status" role="status"></p>
       </section>
     </div>
-    <footer>Analysis via NEAR AI Cloud · GLM 5.3 Flash</footer>
+    <footer>
+      <span class="footer-model"><span class="mark" aria-hidden="true"></span> Confidential analysis via NEAR AI Cloud</span>
+      <span>The demo sends report summaries for analysis. Each finding links back to its supporting reports.</span>
+    </footer>
   </main>
 </body>
 </html>
