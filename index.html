@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Refund Radar</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <main>
+    <header class="intro">
+      <div class="brand"><span class="mark" aria-hidden="true"></span> Refund Radar</div>
+      <h1>Know what to fix first.</h1>
+      <p>Turn confidential support complaints into a leadership brief and ranked fixes.</p>
+    </header>
+    <div class="workspace">
+      <section class="panel" aria-labelledby="input-title">
+        <div class="panel-heading">
+          <h2 id="input-title">Support tickets</h2>
+          <button id="load" class="secondary" type="button">Load sample tickets</button>
+        </div>
+        <label for="tickets">One ticket per line</label>
+        <textarea id="tickets" rows="12" maxlength="20000" spellcheck="false" placeholder="Customer name | Order ID | Complaint"></textarea>
+        <div class="controls">
+          <button id="generate" class="primary" type="button" disabled>Generate brief</button>
+          <span id="ticket-count">0 tickets</span>
+        </div>
+        <p id="generation-status" class="status" role="status"></p>
+      </section>
+      <section class="panel" aria-labelledby="report-title" id="report">
+        <div class="panel-heading">
+          <h2 id="report-title">Leadership brief</h2>
+          <button id="copy" class="secondary" type="button" disabled>Copy brief</button>
+        </div>
+        <p id="brief" class="brief empty">Generate a brief to see the top issues and what to fix.</p>
+        <div id="recommendations" hidden>
+          <h3>Ranked fixes</h3>
+          <ol id="fixes"></ol>
+        </div>
+        <p id="copy-status" class="status" role="status"></p>
+      </section>
+    </div>
+    <footer>Analysis via NEAR AI Cloud · GLM 5.3 Flash</footer>
+  </main>
+</body>
+</html>
