@@ -15,11 +15,12 @@
       <div class="hero-copy">
         <div class="brand"><span class="mark" aria-hidden="true"></span> Refund Radar</div>
         <h1>What happened<br class="hero-break"> to my swap?</h1>
-        <p>When customers keep asking the same question, wallet and swap support teams need to know why. Refund Radar reads the reports, shows what keeps going wrong, and recommends what to fix first.</p>
+        <p>A customer trades one crypto asset for another and the money they expected hasn’t shown up. Refund Radar helps wallet support teams spot where customers are losing track, find the reports behind the problem, and decide what to fix first.</p>
         <div class="hero-actions">
           <button id="run-demo" class="primary hero-cta" type="button">Run the live demo <span aria-hidden="true">→</span></button>
           <span>Three real public reports. No sign-in.</span>
         </div>
+        <a class="story-link" href="#case-study">Read the case study <span aria-hidden="true">↓</span></a>
       </div>
       <aside class="hero-finding" aria-label="Example finding from the public reports">
         <p class="finding-label">From the three public reports</p>
@@ -64,9 +65,54 @@
         <p id="copy-status" class="status" role="status"></p>
       </section>
     </div>
+    <section class="case-study" id="case-study" aria-labelledby="case-title">
+      <header class="case-header">
+        <h2 id="case-title">Same customer question.<br>Three different situations.</h2>
+        <p>A swap can still be processing, end without a confirmed refund, or finish while the wallet’s history misses it. Here’s what support would need to check in each case.</p>
+      </header>
+      <div class="case-grid">
+        <article class="case-card">
+          <p class="case-status">Reported as processing</p>
+          <h3>Why is it still processing?</h3>
+          <p>One customer said the swap still showed as processing after more than 20 days.</p>
+          <p class="case-check"><strong>Check next</strong> Look for a newer status and a transaction showing delivery or a refund.</p>
+          <a href="https://github.com/near/intents/issues/399">Read the GitHub report <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="case-card">
+          <p class="case-status">Reported as failed</p>
+          <h3>Did I get my money back?</h3>
+          <p>A customer reported that the swap failed and the status response showed zero refunded.</p>
+          <p class="case-check"><strong>Check next</strong> Look for a refund transaction and identify who can give the customer an update.</p>
+          <a href="https://gov.near.org/t/failed-near-intents-1-click-swap-575-830-trx-193k-stuck-failed-status-zero-refund-no-support-response/42664">Read the NEAR Forum report <span aria-hidden="true">↗</span></a>
+        </article>
+        <article class="case-card">
+          <p class="case-status">Reported as completed</p>
+          <h3>Why isn’t it in my history?</h3>
+          <p>A wallet integrator reported that two completed swaps were missing from the connected wallet’s history.</p>
+          <p class="case-check"><strong>Check next</strong> Compare the wallet’s history with the records that show the swap completed.</p>
+          <a href="https://github.com/aurora-is-near/intents-swap-widget/issues/325">Read the integrator’s report <span aria-hidden="true">↗</span></a>
+        </article>
+      </div>
+      <p class="case-note">Statuses reflect the original reports and may have changed.</p>
+
+      <div class="case-takeaways">
+        <article class="takeaway">
+          <h3>Count reports. Keep the denominator.</h3>
+          <p>Two of the three reports in this demo point to unclear swap or refund status. The third describes two missing swaps in one report. The app counts each report once, so the result is <strong>2 of 3 reports</strong>. Estimating how common the problem is across NEAR would take a larger, representative sample.</p>
+        </article>
+        <article class="takeaway">
+          <h3>Give the customer a usable update.</h3>
+          <p>Put the latest known status, its timestamp, and any refund transaction link on one screen. If the evidence is missing, say the refund is unconfirmed and show where to get help. A support team could measure <strong>repeat status requests per 100 delayed swaps</strong> before and after the change.</p>
+        </article>
+      </div>
+      <aside class="privacy-note" aria-labelledby="privacy-title">
+        <h3 id="privacy-title">What the AI actually sees</h3>
+        <p>For these public reports, Refund Radar sends short summaries and internal references to NEAR AI Cloud’s confidential model. The app groups the reports and links its findings back to the sources. It uses the reports as evidence of what people experienced at the time. Checking a swap today would require current transaction records.</p>
+      </aside>
+    </section>
     <footer>
       <span class="footer-model"><span class="mark" aria-hidden="true"></span> Confidential analysis via NEAR AI Cloud</span>
-      <span>The demo sends report summaries for analysis. Each finding links back to its supporting reports.</span>
+      <a href="https://github.com/topsoilcommons/refund-radar">View the source code <span aria-hidden="true">↗</span></a>
     </footer>
   </main>
 </body>
