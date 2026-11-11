@@ -2,6 +2,8 @@
 
 For support leads, Refund Radar briefs leadership and ranks fixes, and it needs private AI because tickets contain customer data.
 
+[Try the public demo](https://refund-radar-f671.onrender.com/).
+
 ## Run locally
 
 Use Node.js 22 or later. In macOS Terminal with zsh, open this project and run:
