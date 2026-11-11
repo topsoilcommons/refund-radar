@@ -1,6 +1,7 @@
 import { createServer as createHttpServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
+import { samples } from './samples.mjs';
 
 const endpoint = 'https://cloud-api.near.ai/v1/chat/completions';
 const defaultModel = 'z-ai/glm-5.3-flash';
@@ -19,6 +20,7 @@ const issues = {
 const staticFiles = new Map([
   ['/', ['index.html', 'text/html']],
   ['/app.js', ['app.js', 'text/javascript']],
+  ['/samples.mjs', ['samples.mjs', 'text/javascript']],
   ['/styles.css', ['styles.css', 'text/css']],
 ]);
 
@@ -110,8 +112,8 @@ async function readBody(request) {
   }
 }
 
-async function generate(tickets, { key, model, fetchNear }) {
-  if (!key) throw new AppError(503, 'Set NEAR_AI_API_KEY in Terminal and restart the server.');
+async function generate(tickets, { key, model, fetchNear, publicHost }) {
+  if (!key) throw new AppError(503, 'The server needs a NEAR_AI_API_KEY.');
   if (model !== defaultModel) throw new AppError(503, 'Set NEAR_AI_MODEL to ' + defaultModel + ', the Private TEE model configured for this demo.');
   let response;
   try {
@@ -120,6 +122,7 @@ async function generate(tickets, { key, model, fetchNear }) {
       headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
+        ...(publicHost && { chat_template_kwargs: { enable_thinking: false }, max_tokens: 1024 }),
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: JSON.stringify(tickets) },
@@ -157,28 +160,57 @@ export function createServer({
   key = process.env.NEAR_AI_API_KEY?.trim(),
   model = process.env.NEAR_AI_MODEL?.trim() || defaultModel,
   fetchNear = fetch,
+  publicHost = process.env.RENDER_EXTERNAL_HOSTNAME,
 } = {}) {
+  let remainingCalls = 60;
+  let renewAt = Date.now() + 60 * 60_000;
+  let activeCalls = 0;
+
   return createHttpServer(async (request, response) => {
     try {
       const host = request.headers.host;
-      if (!/^(127\.0\.0\.1|localhost)(:\d+)?$/.test(host ?? '')) {
-        throw new AppError(403, 'Open Refund Radar from localhost.');
+      const isLocal = /^(127\.0\.0\.1|localhost)(:\d+)?$/.test(host ?? '');
+      if (publicHost ? host !== publicHost : !isLocal) {
+        throw new AppError(403, 'Open Refund Radar using its demo URL.');
       }
       if (request.method === 'POST' && request.url === '/api/brief') {
-        if (request.headers.origin && request.headers.origin !== 'http://' + host) {
+        const expectedOrigin = (publicHost ? 'https://' : 'http://') + host;
+        if (request.headers.origin && request.headers.origin !== expectedOrigin) {
           throw new AppError(403, 'Send requests from the Refund Radar page.');
         }
         if (request.headers['content-type']?.split(';')[0] !== 'application/json') {
           throw new AppError(415, 'Use application/json.');
         }
-        const body = await readBody(request);
-        const brief = await generate(parseTickets(body?.tickets), { key, model, fetchNear });
-        return send(response, 200, 'application/json', JSON.stringify(brief));
+        const { tickets } = (await readBody(request)) ?? {};
+        if (publicHost) {
+          if (tickets !== samples) throw new AppError(400, 'Use Load sample tickets for the public demo.');
+          if (Date.now() >= renewAt) {
+            remainingCalls = 60;
+            renewAt = Date.now() + 60 * 60_000;
+          }
+          if (remainingCalls === 0 || activeCalls >= 3) {
+            throw new AppError(429, 'The public demo is at capacity. Try again later.');
+          }
+          remainingCalls--;
+          activeCalls++;
+        }
+        try {
+          const brief = await generate(parseTickets(tickets), { key, model, fetchNear, publicHost });
+          return send(response, 200, 'application/json', JSON.stringify(brief));
+        } finally {
+          if (publicHost) activeCalls--;
+        }
       }
       const file = staticFiles.get(request.url);
       if (request.method !== 'GET' || !file) throw new AppError(404, 'Page not found.');
       const [name, type] = file;
-      send(response, 200, type, await readFile(new URL(name, import.meta.url)));
+      let asset = await readFile(new URL(name, import.meta.url), 'utf8');
+      if (publicHost && name === 'index.html') {
+        asset = asset.replace('One ticket per line', 'Fictional sample tickets only')
+          .replace('<textarea id="tickets"', '<textarea readonly id="tickets"')
+          .replace('Customer name | Order ID | Complaint', 'Click Load sample tickets to begin');
+      }
+      send(response, 200, type, asset);
     } catch (error) {
       const status = error instanceof AppError ? error.status : 500;
       const message = error instanceof AppError ? error.message : 'Refund Radar encountered an unexpected error.';
@@ -189,7 +221,8 @@ export function createServer({
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const port = Number(process.env.PORT || 4310);
-  createServer().listen(port, '127.0.0.1', () => {
-    console.log('Refund Radar is ready at http://127.0.0.1:' + port);
+  const hosted = Boolean(process.env.RENDER_EXTERNAL_HOSTNAME);
+  createServer().listen(port, hosted ? '0.0.0.0' : '127.0.0.1', () => {
+    console.log('Refund Radar is ready at ' + (hosted ? process.env.RENDER_EXTERNAL_URL : 'http://127.0.0.1:' + port));
   });
 }

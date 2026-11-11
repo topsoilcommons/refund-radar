@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: refund-radar
+    runtime: node
+    plan: free
+    buildCommand: node --check server.mjs
+    startCommand: node server.mjs
+    envVars:
+      - key: NODE_VERSION
+        value: 22.23.3
+      - key: NEAR_AI_API_KEY
+        sync: false
