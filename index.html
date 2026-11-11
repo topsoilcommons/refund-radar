@@ -12,18 +12,20 @@
     <header class="intro">
       <div class="brand"><span class="mark" aria-hidden="true"></span> Refund Radar</div>
       <h1>Know what to fix first.</h1>
-      <p>Turn confidential support complaints into a leadership brief and ranked fixes.</p>
+      <p>Turn support complaints into a leadership brief and ranked fixes. Try it with real public NEAR Intents reports.</p>
     </header>
     <div class="workspace">
       <section class="panel" aria-labelledby="input-title">
         <div class="panel-heading">
           <h2 id="input-title">Support tickets</h2>
-          <div class="sample-actions" role="group" aria-label="Load sample tickets">
+          <div class="sample-actions" role="group" aria-label="Choose a report batch">
+            <button id="load-intents" class="secondary" type="button">NEAR Intents reports</button>
             <button id="load" class="secondary" type="button">Refund sample</button>
             <button id="load-shipping" class="secondary" type="button">Shipping sample</button>
           </div>
         </div>
         <label for="tickets">One ticket per line</label>
+        <p id="batch-context" class="status" hidden>Real public reports. Status is shown as reported and may have changed.</p>
         <textarea id="tickets" rows="12" maxlength="20000" spellcheck="false" placeholder="Customer name | Order ID | Complaint"></textarea>
         <div class="controls">
           <button id="generate" class="primary" type="button" disabled>Generate brief</button>

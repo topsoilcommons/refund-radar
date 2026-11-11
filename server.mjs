@@ -1,11 +1,11 @@
 import { createServer as createHttpServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { samples, shippingSamples } from './samples.mjs';
+import { intentsReports, intentsSamples, samples, shippingSamples } from './samples.mjs';
 
 const endpoint = 'https://cloud-api.near.ai/v1/chat/completions';
 const defaultModel = 'z-ai/glm-5.3-flash';
-const publicBatches = new Set([samples, shippingSamples]);
+const publicBatches = new Set([intentsSamples, samples, shippingSamples]);
 
 const issues = {
   refund_confirmation: ['Missing refund confirmations', 'Send a refund confirmation email', 'Tell customers when a refund has been issued and when to expect it.'],
@@ -15,6 +15,8 @@ const issues = {
   coupon: ['Promo code problems', 'Clarify promotion eligibility at checkout', 'Explain why a code was rejected before the customer pays.'],
   billing: ['Billing discrepancies', 'Clarify invoices and review unexpected charges', 'Explain charges on the receipt and route discrepancies for review.'],
   account: ['Account access problems', 'Improve account recovery', 'Give customers a clear path to regain access.'],
+  swap_status: ['Unclear swap or refund status', 'Show swap status and refund evidence in one place', 'Show the last known status, any refund transaction link, and where to escalate if the refund is unconfirmed.'],
+  swap_history: ['Missing swaps in wallet history', 'Make completed swaps visible in wallet history', 'Reconcile wallet history with transaction status records so support can find completed swaps.'],
   other: ['Other complaints', 'Review uncategorized complaints', 'Read these tickets before committing to a specific change.'],
 };
 
@@ -33,6 +35,8 @@ const systemPrompt = [
   ...Object.entries(issues).map(([key, [label]]) => key + ': ' + label),
   'Use refund_confirmation only when a refund was issued and its confirmation is missing.',
   'Use refund_pending for a refund that has not been issued. Use other if no specific key fits.',
+  'For a cross-chain swap stuck in processing or failed with an unconfirmed refund, use swap_status instead of refund_pending.',
+  'For a completed cross-chain swap missing from wallet history, use swap_history.',
 ].join('\n');
 
 class AppError extends Error {
@@ -197,7 +201,7 @@ export function createServer({
         }
         const { tickets } = (await readBody(request)) ?? {};
         if (publicHost) {
-          if (!publicBatches.has(tickets)) throw new AppError(400, 'Choose one of the fictional sample batches for the public demo.');
+          if (!publicBatches.has(tickets)) throw new AppError(400, 'Choose one of the preset batches for the public demo.');
           if (Date.now() >= renewAt) {
             remainingCalls = 60;
             renewAt = Date.now() + 60 * 60_000;
@@ -209,7 +213,10 @@ export function createServer({
           activeCalls++;
         }
         try {
-          const brief = await generate(parseTickets(tickets), { key, model, fetchNear, publicHost });
+          const records = tickets === intentsSamples
+            ? intentsReports.map(({ ref, summary }) => ({ ref, complaint: summary }))
+            : parseTickets(tickets);
+          const brief = await generate(records, { key, model, fetchNear, publicHost });
           return send(response, 200, 'application/json', JSON.stringify(brief));
         } finally {
           if (publicHost) activeCalls--;
@@ -220,7 +227,7 @@ export function createServer({
       const [name, type] = file;
       let asset = await readFile(new URL(name, import.meta.url), 'utf8');
       if (publicHost && name === 'index.html') {
-        asset = asset.replace('One ticket per line', 'Fictional sample tickets only')
+        asset = asset.replace('One ticket per line', 'Reports and sample tickets')
           .replace('<textarea id="tickets"', '<textarea readonly id="tickets"')
           .replace('Customer name | Order ID | Complaint', 'Choose a sample batch to begin');
       }

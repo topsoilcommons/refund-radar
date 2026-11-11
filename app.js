@@ -1,5 +1,6 @@
-import { samples, shippingSamples } from '/samples.mjs';
+import { intentsReports, intentsSamples, samples, shippingSamples } from '/samples.mjs';
 
+const loadIntents = document.querySelector('#load-intents');
 const load = document.querySelector('#load');
 const loadShipping = document.querySelector('#load-shipping');
 const input = document.querySelector('#tickets');
@@ -10,6 +11,7 @@ const brief = document.querySelector('#brief');
 const fixes = document.querySelector('#fixes');
 const recommendations = document.querySelector('#recommendations');
 const generationStatus = document.querySelector('#generation-status');
+const batchContext = document.querySelector('#batch-context');
 const copyStatus = document.querySelector('#copy-status');
 const reportPanel = document.querySelector('#report');
 const emptyBrief = brief.textContent;
@@ -20,6 +22,7 @@ function updateInput() {
   const ticketCount = input.value.split('\n').filter((line) => line.trim()).length;
   count.textContent = ticketCount + (ticketCount === 1 ? ' ticket' : ' tickets');
   generate.disabled = !ticketCount;
+  batchContext.hidden = input.value !== intentsSamples;
   generationStatus.classList.remove('error');
   generationStatus.textContent = '';
   clearReport();
@@ -36,9 +39,12 @@ function clearReport() {
 }
 
 function showReport(report) {
+  const isIntents = input.value === intentsSamples;
   brief.textContent = report.brief;
   brief.classList.remove('empty');
-  const lines = ['Refund Radar | Leadership brief', '', report.brief, '', 'Ranked fixes'];
+  const lines = ['Refund Radar | Leadership brief', '', report.brief];
+  if (isIntents) lines.push('Based on public reports. Current transaction and refund status were not verified.');
+  lines.push('', 'Ranked fixes');
   for (const [index, fix] of report.fixes.entries()) {
     const row = document.createElement('li');
     const action = document.createElement('strong');
@@ -56,6 +62,23 @@ function showReport(report) {
     summary.textContent = 'View evidence';
     refs.textContent = 'Supporting tickets, in input order: ' + fix.refs.join(', ');
     disclosure.append(summary, refs);
+    if (isIntents) {
+      for (const ref of fix.refs) {
+        const source = intentsReports.find((item) => item.ref === ref);
+        if (!source) continue;
+        const handoff = document.createElement('p');
+        const link = document.createElement('a');
+        link.href = source.url;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = ref + ' · ' + source.source;
+        handoff.append(link, document.createElement('br'),
+          'Status as reported: ' + source.status + '.', document.createElement('br'),
+          'Refund evidence: ' + source.refund, document.createElement('br'),
+          'Next check: ' + source.nextCheck);
+        disclosure.append(handoff);
+      }
+    }
     row.append(action, evidence, detail, disclosure);
     fixes.append(row);
     lines.push((index + 1) + '. ' + fix.action + ' (' + ticketLabel + '). ' + fix.why);
@@ -71,13 +94,14 @@ function loadSample(tickets) {
   updateInput();
 }
 
+loadIntents.addEventListener('click', () => loadSample(intentsSamples));
 load.addEventListener('click', () => loadSample(samples));
 loadShipping.addEventListener('click', () => loadSample(shippingSamples));
 input.addEventListener('input', updateInput);
 
 generate.addEventListener('click', async () => {
   clearReport();
-  load.disabled = loadShipping.disabled = input.disabled = generate.disabled = true;
+  loadIntents.disabled = load.disabled = loadShipping.disabled = input.disabled = generate.disabled = true;
   reportPanel.setAttribute('aria-busy', 'true');
   generationStatus.classList.remove('error');
   generationStatus.textContent = 'Analyzing complaints with NEAR AI…';
@@ -97,7 +121,7 @@ generate.addEventListener('click', async () => {
       ? 'Could not reach Refund Radar. Check that the local server is running.'
       : error.message;
   } finally {
-    load.disabled = loadShipping.disabled = input.disabled = generate.disabled = false;
+    loadIntents.disabled = load.disabled = loadShipping.disabled = input.disabled = generate.disabled = false;
     reportPanel.removeAttribute('aria-busy');
   }
 });
